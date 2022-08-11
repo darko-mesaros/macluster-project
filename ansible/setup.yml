@@ -1,0 +1,111 @@
+---
+- hosts: all
+  become: true
+  vars:
+    node_exporter_version: 1.3.1
+    aws_region: us-west-2
+  tasks:
+
+  # Package installation
+  - name: Install vim package
+    apt:
+      name: vim
+      state: latest
+  - name: Install htop package
+    apt:
+      name: htop
+      state: latest
+  - name: Install docker requirements
+    apt:
+      name: 
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg2
+        - software-properties-common
+        - lsb-release
+      state: latest
+      update_cache: true
+
+  - name: Add signing key
+    ansible.builtin.apt_key:
+      url: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg"
+      state: present
+
+  - name: Add repository into sources list
+    ansible.builtin.apt_repository:
+      repo: "deb [arch={{ ansible_architecture }}] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"
+      state: present
+      filename: docker
+
+  - name: Install Docker
+    ansible.builtin.apt:
+      name:
+        - docker
+        - docker.io
+        - docker-compose
+        - docker-registry
+      state: latest
+      update_cache: true
+
+  # Laptop stuff - This is just for the macbooks
+  - name: Ensure that the laptop does not suspend when lid is closed
+    ansible.builtin.blockinfile:
+      path: /etc/systemd/logind.conf
+      state: present
+      block: |
+        HandleLidSwitch=ignore
+        HandleLidSwitchExternalPower=ignore
+        HandleLidSwitchDocked=ignore
+  
+  - name: Download and install amazon-ssm-agent deb package
+    apt:
+      deb: "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb"
+  - name: Enable Amazon SSM Agent service
+    service:
+      name: amazon-ssm-agent
+      enabled: yes
+
+  # Install the ECS Anywhere stuff
+  - name: ECS Anywhere configuration download
+    ansible.builtin.command: 
+      cmd: curl --proto "https" -o "/root/ecs-anywhere-install.sh" "https://amazon-ecs-agent.s3.amazonaws.com/ecs-anywhere-install-latest.sh"
+      creates: /root/ecs-anywhere-install.sh
+
+  - name: ECS Anywhere configuration exec
+    ansible.builtin.command: 
+      cmd: bash /root/ecs-anywhere-install.sh --region "{{ aws_region }}" --cluster "{{ ecsCluster }}" --activation-id "{{ activationId }}" --activation-code "{{ activationCode }}"
+      creates: /etc/ecs/ecs.config
+
+  # NODE EXPORTER - Very much optional
+  - name: download node exporter
+    get_url:
+      url: https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz
+      dest: /tmp
+  - name: unarchive node exporter
+    unarchive:
+      remote_src: yes
+      src: /tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz
+      dest: /tmp
+  - name: move node exporter to /usr/local/bin
+    copy:
+      src: /tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter
+      dest: /usr/local/bin/node_exporter
+      remote_src: yes
+      owner: root
+      group: root
+      mode: 0755
+  - name: install unit file to systemd
+    template:
+      src: templates/node_exporter.service.j2
+      dest: /etc/systemd/system/node_exporter.service
+      owner: root
+      group: root
+      mode: 0600
+  - name: configure systemd to use service
+    systemd:
+      daemon_reload: yes
+      enabled: yes
+      state: started
+      name: node_exporter.service
+
