@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>ECS Anywhere</title>
+  <link rel="icon" type="image/x-icon" href="https://s3.us-west-2.amazonaws.com/content.rup12.net/networkserver.ico">
+  <style>
+    .bar {
+      position: relative;
+      height: 40px;
+      width: 100%;
+      background-color: gray;
+      margin-top: 20px;
+      line-height: 40px;
+      text-align: left;
+    }
+
+    .fill {
+      padding-left: 10px;
+      overflow: show;
+      white-space: nowrap;
+      display: block;
+      position: absolute;
+      top: 0px;
+      float: left;
+      min-width: 4px;
+    }
+    .rowblock{
+      display: flex;
+      background-color: black;
+      justify-content: space-between;
+    }
+    .systemblock {
+      font-family: "Courier New", monospace;
+      background-color: black;
+      padding-top: 10px;
+      padding-left: 10px;
+      padding-bottom: 10px;
+    }
+    .imageblock {
+    }
+  </style>
+</head>
+
+<body style="background-color:rgb(35, 47, 62);">
+  <div style='vertical-align: middle; margin:auto; width:1024px; padding-top:20px; text-align: center;'>
+    <div style='font-size: 20px; font-family: "Gill Sans", sans-serif; color: white;'>
+      <p>
+      <h1>You have reached a 2007 Intel Core 2 Duo Macbook sitting next to <a style='color: orange'
+          href='https://twitter.com/darkosubotica'>@darkosubotica</a>.</h1>
+      </p>
+      <p>
+      <h2>Current Macbook: <%= bla %> </h2>
+      </p>
+      <br />
+    </div>
+  </div>
+  <div class=rowblock style='font-size: 16px; font-family: "Gill Sans", sans-serif; color: green;'>
+    <div class=systemblock>
+      <h2>System information:</h2>
+      <p style='color: white'>
+      <b>Operating System:</b> <%= osInfo %>
+      </p>
+      <p style='color: white'>
+      <b>CPU:</b> <%= cpuInfo %>
+      </p>
+      <p style='color: white'>
+      <b>RAM: </b> <%= totalRam %> MB
+      </p>
+      <p style="color: cyan">
+      <code>----------------------------------------</code>
+      </p>
+      <p style='color: white'>
+      <b>Uptime:</b> <%= uptime %>
+      </p>
+      <p style='color: white'>
+      <b>CPU utilization:</b> <%= cpu %> %
+      </p>
+      <p style='color: white'>
+      <b>Memory usage:</b> <%= memory %> % out of <%= totalRam %> MB
+      </p>
+      <p style="color: magenta">
+      <code>----------------------------------------</code>
+      </p>
+      <p style='color: white'>
+      <b>CPU Temperature:</b> <%= temp %> C
+      </p>
+    </div>
+    <div class=imageblock>
+      <img src="https://s3.us-west-2.amazonaws.com/content.rup12.net/macluster.jpg"/></img>
+    </div>
+  </div>
+</body>
+
+</html>
